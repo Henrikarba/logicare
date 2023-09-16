@@ -9,13 +9,13 @@ import code
 
 cam = cv2.VideoCapture(0)
 # cam.set(cv2.CAP_PROP_FPS, 20)
-  
+
 # Variables
 blink_thresh = 0.37
 yawn_thr = 1
 succ_frame = 2
 count_frame = 0
-  
+
 # Eye landmarks
 (L_start, L_end) = face_utils.FACIAL_LANDMARKS_IDXS["left_eye"]
 (R_start, R_end) = face_utils.FACIAL_LANDMARKS_IDXS['right_eye']
@@ -27,7 +27,7 @@ detector = dlib.get_frontal_face_detector()
 landmark_predict = dlib.shape_predictor(
     'shape_predictor_68_face_landmarks.dat')
 
-if cam.isOpened(): # try to get the first frame
+if cam.isOpened():  # try to get the first frame
     res, image = cam.read()
 else:
     res = False
@@ -40,7 +40,7 @@ per_minute_yawn = []
 blink_timestamps = []
 yawn_timestamps = []
 while res:
-    if (time.time() - last_yawn) > 5: 
+    if (time.time() - last_yawn) > 5:
         already_yawned = False
     if elapsed_time >= 60:
         # print(1/total_blinks, total_yawn/5)
@@ -50,9 +50,9 @@ while res:
         per_minute_yawn.append(total_yawn)
         print("blinks ", per_minute_blink)
         print("yawns ", per_minute_yawn)
-        total_blinks = 0 
+        total_blinks = 0
         total_yawn = 0
-        elapsed_time=0
+        elapsed_time = 0
     image = imutils.resize(image, width=640)
     img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -76,7 +76,7 @@ while res:
         left_EAR = calculate_EAR(lefteye)
         right_EAR = calculate_EAR(righteye)
         MAR = calculate_MAR(mouth)
-        avg = (left_EAR+right_EAR)/2
+        avg = (left_EAR + right_EAR) / 2
         # print(avg)
         if avg < blink_thresh:
             count_frame += 1  # incrementing the frame count
@@ -86,23 +86,23 @@ while res:
         if MAR > yawn_thr and not already_yawned:
             total_yawn += 1
             yawn_timestamps.append(time.time())
-            already_yawned=True
+            already_yawned = True
             last_yawn = time.time()
         text = 'Blinks: ' + str(total_blinks) + " Yawns: " + str(total_yawn)
         image = cv2.putText(
-                        img = image,
-                        text = text,
-                        org = (25, 25),
-                        fontFace = cv2.FONT_HERSHEY_DUPLEX,
-                        fontScale = 0.7,
-                        color = (225, 246, 55),
-                        thickness = 1
-                        )
-        cv2.imshow("cam",image)
-        res, image = cam.read()
-        elapsed_time += time.time() - start_time
-        key = cv2.waitKey(20)
-        if key == 27: # exit on ESC
-            break
+            img=image,
+            text=text,
+            org=(25, 25),
+            fontFace=cv2.FONT_HERSHEY_DUPLEX,
+            fontScale=0.7,
+            color=(225, 246, 55),
+            thickness=1
+        )
+    cv2.imshow("cam", image)
+    res, image = cam.read()
+    elapsed_time += time.time() - start_time
+    key = cv2.waitKey(20)
+    if key == 27:  # exit on ESC
+        break
 cv2.destroyAllWindows()
 cam.release()
