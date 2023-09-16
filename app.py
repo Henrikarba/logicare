@@ -1,8 +1,10 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QMainWindow, QStackedWidget, QToolButton, QMessageBox
+import threading
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QMainWindow, QStackedWidget, QToolButton, QDialog, QSystemTrayIcon, QMenu
 from animated_toggle import AnimatedToggle
-from PyQt6.QtCore import Qt, QRect, QSize
-from PyQt6.QtGui import QColor, QFont, QCursor, QIcon
+from PyQt6.QtCore import Qt, QSize, QTimer, pyqtSignal, QObject
+from PyQt6.QtGui import QColor, QFont, QCursor, QIcon, QGuiApplication, QAction, QKeyEvent
+from pynput import keyboard
 
 # Set the global font
 font = QFont("Brown Pro Light", 20)
@@ -13,6 +15,13 @@ light_gray = QColor("#F4F3F4")
 black = QColor("#080608")
 lighter_black = QColor("#141214")
 gray = QColor("#211F21")
+
+
+def minimize_to_system_tray():
+    # Allow clicking the system tray icon to restore the window
+    app.setActiveWindow(None)
+    main_window.hide()
+    tray_icon.show()
 
 
 class MyMainWindow(QMainWindow):
@@ -26,7 +35,6 @@ class MyMainWindow(QMainWindow):
                 background-color: {black.name()};
                 font-size: 20px;
                 color: {light_gray.name()};
-                
             }}
         """)
 
@@ -52,7 +60,6 @@ class MyMainWindow(QMainWindow):
         widget1.setLayout(layout1)
 
         # Create Layout 2
-
         camera = AnimatedToggle(checked_color=QColor(blue))
         camera.setFixedSize(camera.sizeHint())
         keyboard = AnimatedToggle(checked_color=QColor(blue))
@@ -64,12 +71,6 @@ class MyMainWindow(QMainWindow):
         keyboard.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         mouse.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
-        def Submit():
-            camera_value = camera.isChecked()
-            keyboard_value = keyboard.isChecked()
-            mouse_value = mouse.isChecked()
-            print(camera_value, keyboard_value, mouse_value)
-
         # Create the Submit button and connect it to the Submit function
         submit = QPushButton("Submit")
         submit.setStyleSheet(f"""
@@ -77,26 +78,24 @@ class MyMainWindow(QMainWindow):
                 background-color: {blue.name()};
             }}
             QPushButton:hover {{
-                color:rgba(244,243,244,0.5);
+                color: rgba(244,243,244,0.5);
             }}
         """)
 
         submit.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
-        submit.clicked.connect(Alert)
+        # submit.clicked.connect()
 
         # Create a QVBoxLayout for the main window
         layout2 = QVBoxLayout()
 
         # labels
-
         label_main = QLabel("Choose Options")
         label_camera = QLabel("Toggle Camera")
         label_keyboard = QLabel("Toggle Keyboard")
         label_mouse = QLabel("Toggle Mouse")
 
         # label styling
-
         label_main.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # layouts
@@ -135,52 +134,85 @@ class MyMainWindow(QMainWindow):
         self.stacked_widget.addWidget(widget1)
         self.stacked_widget.addWidget(widget2)
 
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key.Key_Delete:
+            # The delete button (Del) was pressed
+            show_custom_alert("Delete button was pressed")
+        else:
+            # Handle other key events
+            super().keyPressEvent(event)
 
-def Alert():
-    # Create a new instance of QMessageBox
-    alert_box = QMessageBox()
 
-    # Set the alert properties
-    alert_box.setWindowTitle("Alert")
-    alert_box.setText("Alert message")
-    alert_box.setIcon(QMessageBox.Icon.Warning)
-    alert_box.addButton("Got it", QMessageBox.ButtonRole.AcceptRole)
+class Alert(QDialog):
+    def __init__(self, message, duration=30000):
+        super().__init__()
 
-    # Apply styling to the alert box
-    alert_box.setStyleSheet(f"""
-        QMessageBox {{
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint |
+                            Qt.WindowType.WindowStaysOnTopHint)
+
+        self.message_label = QLabel(message)
+        self.message_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.message_label.setWordWrap(True)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.message_label)
+        self.setLayout(layout)
+
+        self.setStyleSheet(f"""
             background-color: {black.name()};
-            font-size: 20px;
             color: {light_gray.name()};
-        }}
-        QPushButton {{
-            background-color: {blue.name()};
-        }}
-        QPushButton:hover {{
-            color: rgba(244, 243, 244, 0.5);
-        }}
-    """)
+            font-size: 20px;
+        """)
 
-    # Get the screen dimensions
-    screen = app.primaryScreen()
-    screen_geometry = screen.availableGeometry()
+        self.setFixedHeight(100)  # Adjust the height as needed
+        self.setFixedWidth(200)  # Adjust the width as needed
 
-    # Calculate the position for the bottom-right corner
-    alert_width = alert_box.width()
-    alert_height = alert_box.height()
-    x = screen_geometry.width() - alert_width
-    y = screen_geometry.height() - alert_height
+        # Move the alert to the bottom right corner
+        self.move_to_bottom_right()
 
-    # Set the alert box position
-    alert_box.setGeometry(QRect(x, y, alert_width, alert_height))
+        # Automatically close the alert after a certain duration
+        self.close_timer = QTimer(self)
+        self.close_timer.timeout.connect(self.close)
+        self.close_timer.start(duration)
 
-    # Show the alert box
-    alert_box.exec()
+    def move_to_bottom_right(self):
+        screen = QGuiApplication.primaryScreen()
+        screen_geometry = screen.availableGeometry()
+
+        self.setGeometry(
+            screen_geometry.width() - self.width(),
+            screen_geometry.height() - self.height(),
+            self.width(),
+            self.height(),
+        )
+
+
+def show_custom_alert(message="Error: No call message"):
+    alert = Alert(message)
+    alert.exec()
+
+
+class KeyPressSignal(QObject):
+    key_pressed = pyqtSignal()
+
+
+key_press_signal = KeyPressSignal()
+
+
+def key_listener():
+    with keyboard.Listener(on_press=on_key_press) as listener:
+        listener.join()
+
+
+def on_key_press(key):
+    if key == keyboard.Key.delete:
+        key_press_signal.key_pressed.emit()
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setFont(font)
+
     # Set the window size (width, height)
     screen = app.primaryScreen()
     # Calculate the size for the window (half the screen size)
@@ -189,4 +221,43 @@ if __name__ == "__main__":
 
     main_window = MyMainWindow()
     main_window.show()
+
+    # Store the main window reference in the app
+    app.main_window = main_window
+
+    # Minimize the application to the system tray
+    main_window.hide()
+
+    # Create the system tray icon after creating the main window
+    tray_icon = QSystemTrayIcon(QIcon("icon.png"))
+    tray_icon.setToolTip("LogiCare")
+
+    # Create a menu for the system tray icon
+    tray_menu = QMenu()
+
+    # Add an action to restore the main window
+    restore_action = QAction("Restore", tray_icon)
+    restore_action.triggered.connect(
+        lambda: main_window.showNormal())  # Corrected connection
+    tray_menu.addAction(restore_action)
+
+    # Add an action to exit the application
+    exit_action = QAction("Exit", tray_icon)
+    exit_action.triggered.connect(app.quit)
+    tray_menu.addAction(exit_action)
+
+    tray_icon.setContextMenu(tray_menu)
+
+    tray_icon.show()
+
+    # Create a separate thread for keypress monitoring
+    key_listener_thread = threading.Thread(target=key_listener)
+    # This allows the thread to exit when the main program exits
+    key_listener_thread.daemon = True
+    key_listener_thread.start()
+
+    # Connect the custom signal to the alert function
+    key_press_signal.key_pressed.connect(
+        lambda: show_custom_alert("Please consider taking a break or getting some rest"))
+
     sys.exit(app.exec())
