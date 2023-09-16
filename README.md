@@ -12,3 +12,8 @@ By Henri, Ilia, Lune, Jiayao at HackZurich23
 
 * app interface
 * keyboard feedback output
+
+## GUI
+### How to run locally?
+* Install gui-requirements.txt
+* At project root path, run command `python gui/app.py`
