@@ -37,11 +37,15 @@ elapsed_time = 0
 last_yawn = time.time() - 10
 per_minute_blink = []
 per_minute_yawn = []
+blink_timestamps = []
+yawn_timestamps = []
 while res:
     if (time.time() - last_yawn) > 5: 
         already_yawned = False
     if elapsed_time >= 60:
         # print(1/total_blinks, total_yawn/5)
+        blink_callback(total_blinks)
+        yawn_callback(total_yawn)
         per_minute_blink.append(total_blinks)
         per_minute_yawn.append(total_yawn)
         print("blinks ", per_minute_blink)
@@ -81,6 +85,7 @@ while res:
             count_frame = 0
         if MAR > yawn_thr and not already_yawned:
             total_yawn += 1
+            yawn_timestamps.append(time.time())
             already_yawned=True
             last_yawn = time.time()
         text = 'Blinks: ' + str(total_blinks) + " Yawns: " + str(total_yawn)

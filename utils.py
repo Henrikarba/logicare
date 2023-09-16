@@ -3,6 +3,32 @@ import dlib  # for face and landmark detection
 import imutils
 from scipy.spatial import distance as dist
 from imutils import face_utils
+import os
+import time
+
+def blink_callback(blinks_per_min):
+    file_name = 'mouse_tracking_data.txt'
+    if not os.path.isfile(file_name):
+        columns = ['event_type', 'button', 'x', 'y', 'delta', 'time']
+        with open(file_name, 'a') as f:
+            f.write(','.join(columns))
+            f.write('\n')
+    data = ["blink", "", "", "", str(blinks_per_min), str(time.time())]
+    with open(file_name, 'a') as f:
+        f.write(','.join(data))
+        f.write('\n')
+
+def yawn_callback(yawns_per_min):
+    file_name = 'mouse_tracking_data.txt'
+    if not os.path.isfile(file_name):
+        columns = ['event_type', 'button', 'x', 'y', 'delta', 'time']
+        with open(file_name, 'a') as f:
+            f.write(','.join(columns))
+            f.write('\n')
+    data = ["yawn", "", "", "", str(yawns_per_min), str(time.time())]
+    with open(file_name, 'a') as f:
+        f.write(','.join(data))
+        f.write('\n')
 
 # defining a function to calculate the EAR
 def calculate_EAR(eye):
