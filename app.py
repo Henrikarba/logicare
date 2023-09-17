@@ -1,20 +1,23 @@
 import sys
 import threading
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QMainWindow, QStackedWidget, QToolButton, QDialog, QSystemTrayIcon, QMenu
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QMainWindow, QStackedWidget, QToolButton, QDialog, QSystemTrayIcon, QMenu
 from animated_toggle import AnimatedToggle
-from PyQt6.QtCore import Qt, QSize, QTimer, pyqtSignal, QObject, QProcess
-from PyQt6.QtGui import QColor, QFont, QCursor, QIcon, QGuiApplication, QAction, QKeyEvent
+from PyQt6.QtCore import Qt, QSize, QTimer, pyqtSignal, QObject, QUrl
+from PyQt6.QtGui import QColor, QFont, QCursor, QIcon, QGuiApplication, QAction
+from PyQt6.QtWebEngineWidgets import QWebEngineView
 from pynput import keyboard
 
 # Set the global font
 font = QFont("Brown Pro Light", 20)
 
 # Define Logitech-inspired colors
-blue = QColor("#04A5E5")
-light_gray = QColor("#F4F3F4")
-black = QColor("#080608")
-lighter_black = QColor("#141214")
-gray = QColor("#211F21")
+
+background = QColor("white")
+text = QColor("black")
+beige = QColor("#FF8658")
+blue = QColor("#4B7CCC")
+ligt_blue = QColor("#77F2FF")
+yellow = QColor("#9FC131")
 
 
 def minimize_to_system_tray():
@@ -24,40 +27,79 @@ def minimize_to_system_tray():
     tray_icon.show()
 
 
+class CustomTitleBar(QWidget):
+    def __init__(self, main_window):
+        super().__init__()
+        self.main_window = main_window
+        self.initUI()
+
+    def initUI(self):
+        layout = QHBoxLayout()  # Use QHBoxLayout for horizontal arrangement
+
+        self.backButton = QPushButton()
+        self.backButton.setIcon(QIcon("arrow.png"))
+        self.backButton.setFixedSize(QSize(35, 35))
+        self.backButton.setIconSize(self.backButton.sizeHint())
+        self.setStyleSheet(f"""
+            background-color: {background.name()};
+            border: none;
+            outline: none;
+        """)
+        self.backButton.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.backButton.clicked.connect(
+            lambda: self.main_window.stacked_widget.setCurrentIndex(0))
+
+        self.settings = QPushButton()
+        self.settings.setIcon(QIcon("settings.png"))
+        self.settings.setFixedSize(35, 35)
+        self.settings.setIconSize(self.settings.sizeHint())
+        self.setStyleSheet(f"""
+            background-color: {background.name()};
+            border: none;
+            outline: none;
+        """)
+        self.settings.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.settings.clicked.connect(
+            lambda: self.main_window.stacked_widget.setCurrentIndex(1))
+
+        # Add the buttons to the layout without alignment
+        layout.addWidget(self.backButton)
+        layout.addStretch(1)
+        layout.addWidget(
+            self.settings)
+
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
+
+
 class MyMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.resize(window_width, window_height)
-        self.setWindowTitle("LogiCare")
+        custom_title_bar = CustomTitleBar(self)
+        self.setMenuWidget(custom_title_bar)
+
+        self.setGeometry(100, 100, 1000, 800)
+        self.setWindowTitle('LogiCare')
+
+        # self.resize(window_width, window_height)
         self.setStyleSheet(f"""
             QWidget {{
-                background-color: {black.name()};
+                background-color: {background.name()};
                 font-size: 20px;
-                color: {light_gray.name()};
+                color: {text.name()};
             }}
         """)
-
         # Create a stacked widget to manage layouts
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
 
-        # Create Main Layout
-        ToSettings = QToolButton()
-        ToSettings.setIcon(QIcon("settings.png"))
-        ToSettings.setIconSize(QSize(24, 24))
-        ToSettings.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        layout = QVBoxLayout(self.stacked_widget)
 
-        layout1 = QVBoxLayout()
-        label1 = QLabel("This is Layout 1")
-        ToSettings.clicked.connect(
-            lambda: self.stacked_widget.setCurrentIndex(1))
-        layout1.addWidget(
-            ToSettings, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
-        layout1.addWidget(label1)
-
-        widget1 = QWidget()
-        widget1.setLayout(layout1)
+        # Embed the Dash app using QWebEngineView
+        widget1 = QWebEngineView()
+        widget1.setUrl(QUrl('http://127.0.0.1:8050/'))
+        layout.addWidget(widget1)
 
         # Create Layout 2
         camera = AnimatedToggle(checked_color=QColor(blue))
@@ -111,16 +153,7 @@ class MyMainWindow(QMainWindow):
         mouse_layout.addWidget(label_mouse)
         mouse_layout.addWidget(mouse)
 
-        backButton = QToolButton()
-        backButton.setIcon(QIcon("arrow.png"))
-        backButton.setIconSize(QSize(24, 24))
-        backButton.clicked.connect(
-            lambda: self.stacked_widget.setCurrentIndex(0))
-        backButton.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
-
         # Add labels, AnimatedToggle widgets, and the Submit button to the layout
-        layout2.addWidget(
-            backButton, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         layout2.addWidget(label_main)
         layout2.addLayout(camera_layout)
         layout2.addLayout(keyboard_layout)
@@ -161,14 +194,6 @@ class MyMainWindow(QMainWindow):
         if command:
             show_custom_alert('Please take a break!')
 
-    def keyPressEvent(self, event: QKeyEvent):
-        if event.key() == Qt.Key.Key_Delete:
-            # The delete button (Del) was pressed
-            show_custom_alert("Delete button was pressed")
-        else:
-            # Handle other key events
-            super().keyPressEvent(event)
-
 
 class Alert(QDialog):
     def __init__(self, message, duration=30000):
@@ -186,8 +211,8 @@ class Alert(QDialog):
         self.setLayout(layout)
 
         self.setStyleSheet(f"""
-            background-color: {black.name()};
-            color: {light_gray.name()};
+            background-color: {background.name()};
+            color: {text.name()};
             font-size: 20px;
         """)
 
