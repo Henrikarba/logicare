@@ -2,7 +2,7 @@ import sys
 import threading
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QMainWindow, QStackedWidget, QToolButton, QDialog, QSystemTrayIcon, QMenu
 from animated_toggle import AnimatedToggle
-from PyQt6.QtCore import Qt, QSize, QTimer, pyqtSignal, QObject
+from PyQt6.QtCore import Qt, QSize, QTimer, pyqtSignal, QObject, QProcess
 from PyQt6.QtGui import QColor, QFont, QCursor, QIcon, QGuiApplication, QAction, QKeyEvent
 from pynput import keyboard
 
@@ -133,6 +133,20 @@ class MyMainWindow(QMainWindow):
         # Add both layouts to the stacked widget
         self.stacked_widget.addWidget(widget1)
         self.stacked_widget.addWidget(widget2)
+
+        # self.init_processes()
+
+    def init_processes(self):
+        self.tracking_p = QProcess()
+        self.tracking_p.readyReadStandardOutput.connect(self.handle_stdout)
+        self.tracking_p.start("python", ["dummy_script.py"])
+
+        # self.webcam_p = QProcess()
+
+
+    def handle_stdout(self):
+        print(bytes(self.tracking_p.readAllStandardOutput()).decode("utf8"))
+        Alert('yo mama').exec()
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key.Key_Delete:
