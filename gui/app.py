@@ -6,11 +6,15 @@ import dash_bootstrap_components as dbc
 import plotly.graph_objs as go
 
 # Incorporate mock data and specify data viz
-def generate_individual_viz(df, x='hours_of_the_day', y='overall_fatigue_values', 
-                     x_label='hour of the day', y_label='fatigue level (0-10)',
-                     title='Fatigue level during the day'):
-    fig = px.area(x=df[x], y=df[y], title=title, labels={x: x_label, y: y_label})
+
+
+def generate_individual_viz(df, x='hours_of_the_day', y='overall_fatigue_values',
+                            x_label='hour of the day', y_label='fatigue level (0-10)',
+                            title='Fatigue level during the day'):
+    fig = px.area(x=df[x], y=df[y], title=title,
+                  labels={x: x_label, y: y_label})
     return fig
+
 
 def generate_overall_viz(df):
     fig = go.Figure([
@@ -56,33 +60,34 @@ def generate_overall_viz(df):
         title='Overall well-being level during the day',
         hovermode="x"
     )
-    fig.add_hrect(y0=8, y1=10, line_width=0, fillcolor="red", opacity=0.2, 
-                  showlegend=True, name='unhealthy status') 
-    return fig 
+    fig.add_hrect(y0=8, y1=10, line_width=0, fillcolor="red", opacity=0.2,
+                  showlegend=True, name='unhealthy status')
+    return fig
 
-data_overall = pd.read_feather('./gui/mock_data/data_overall.feather')
-data_mouse = pd.read_feather('./gui/mock_data/data_mouse.feather')
-data_blinking = pd.read_feather('./gui/mock_data/data_blinking.feather')
-data_yawning = pd.read_feather('./gui/mock_data/data_yawning.feather')
+
+data_overall = pd.read_feather('./mock_data/data_overall.feather')
+data_mouse = pd.read_feather('./mock_data/data_mouse.feather')
+data_blinking = pd.read_feather('./mock_data/data_blinking.feather')
+data_yawning = pd.read_feather('./mock_data/data_yawning.feather')
 df_merged = data_overall.merge(data_mouse, on='hours_of_the_day', how='inner') \
-                    .merge(data_blinking, on='hours_of_the_day', how='inner') \
-                    .merge(data_yawning, on='hours_of_the_day', how='inner')
+    .merge(data_blinking, on='hours_of_the_day', how='inner') \
+    .merge(data_yawning, on='hours_of_the_day', how='inner')
 
 fig_overall = generate_overall_viz(df_merged)
 fig_mouse = generate_individual_viz(data_mouse, x='hours_of_the_day', y='mouse_fatigue_values',
-                    x_label='hour of the day', y_label='stressed inferred from mouse movement',
-                      title='Fatigue inferred from mouse movement')
+                                    x_label='hour of the day', y_label='stressed inferred from mouse movement',
+                                    title='Fatigue inferred from mouse movement')
 fig_blinking = generate_individual_viz(data_blinking, x='hours_of_the_day', y='blinking_fatigue_values',
-                    x_label='hour of the day', y_label='fatigue inferred from blinking frequency',
-                      title='Fatigue inferred from blinking frequency')
+                                       x_label='hour of the day', y_label='fatigue inferred from blinking frequency',
+                                       title='Fatigue inferred from blinking frequency')
 fig_yawning = generate_individual_viz(data_yawning, x='hours_of_the_day', y='yawning_fatigue_values',
-                    x_label='hour of the day', y_label='fatigue inferred from yawning frequency',
-                      title='Fatigue inferred from yawning frequency')
+                                      x_label='hour of the day', y_label='fatigue inferred from yawning frequency',
+                                      title='Fatigue inferred from yawning frequency')
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.MINTY])
 
 app.layout = html.Div([
-    html.H1(children='LogiCare', style={'textAlign':'center'}),
+    html.H1(children='LogiCare', style={'textAlign': 'center'}),
     html.Hr(),
     dcc.Tabs(id="tabs-graph", value='overall', children=[
         dcc.Tab(label='Overall fatigue', value='overall'),
@@ -96,8 +101,9 @@ app.layout = html.Div([
     html.H3(children='Info: where to process & store data?'),
 ])
 
+
 @callback(Output('tabs-content-example-graph', 'children'),
-        Input('tabs-graph', 'value'))
+          Input('tabs-graph', 'value'))
 def render_content(tab):
     if tab == 'overall':
         return html.Div([

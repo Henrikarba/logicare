@@ -1,10 +1,14 @@
 import sys
 import threading
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QMainWindow, QStackedWidget, QToolButton, QDialog, QSystemTrayIcon, QMenu
+from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QMainWindow, QStackedWidget, QToolButton, QDialog, QSystemTrayIcon, QMenu
 from animated_toggle import AnimatedToggle
-from PyQt6.QtCore import Qt, QSize, QTimer, pyqtSignal, QObject
+from PyQt6.QtCore import Qt, QSize, QTimer, pyqtSignal, QObject, QUrl
 from PyQt6.QtGui import QColor, QFont, QCursor, QIcon, QGuiApplication, QAction, QKeyEvent
+from PyQt6.QtWebEngineWidgets import QWebEngineView
 from pynput import keyboard
+
+# Import your Dash app and functions here
+from dash import Dash, html, dash_table, dcc, callback, Output, Input
 
 # Set the global font
 font = QFont("Brown Pro Light", 20)
@@ -28,8 +32,26 @@ class MyMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.resize(window_width, window_height)
         self.setWindowTitle("LogiCare")
+        # Create the main window
+        self.setGeometry(100, 100, 800, 600)
+
+        # Create a central widget to hold the Dash app
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+
+        # Create a layout for the central widget
+        self.layout = QVBoxLayout(self.central_widget)
+
+        # Embed the Dash app using QWebEngineView
+        self.dash_view = QWebEngineView()
+        self.dash_view.setUrl(QUrl('http://127.0.0.1:8050/'))
+        self.setCentralWidget(self.dash_view)
+
+        # Serve and load the Dash app in the QWebEngineView
+        # self.start_dash_app()
+
+        # self.resize(window_width, window_height)
         self.setStyleSheet(f"""
             QWidget {{
                 background-color: {black.name()};
@@ -37,7 +59,7 @@ class MyMainWindow(QMainWindow):
                 color: {light_gray.name()};
             }}
         """)
-
+        '''
         # Create a stacked widget to manage layouts
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
@@ -133,6 +155,21 @@ class MyMainWindow(QMainWindow):
         # Add both layouts to the stacked widget
         self.stacked_widget.addWidget(widget1)
         self.stacked_widget.addWidget(widget2)
+
+    """def start_dash_app(self):
+        # Create and run the Dash app within QWebEngineView
+        self.dash_app = Dash(__name__)
+        self.dash_app.layout = html.Div([
+            html.H1("Embedded Dash App"),
+            # Add your Dash components here
+            # ...
+        ])
+
+        # Serve the Dash app locally
+        self.dash_app.run_server(port=8050, debug=False, use_reloader=False)
+
+        # Load the Dash app into the QWebEngineView
+        self.dash_view.setUrl(QUrl("http://localhost:8050"))"""'''
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key.Key_Delete:
