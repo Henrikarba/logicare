@@ -173,27 +173,29 @@ class MyMainWindow(QMainWindow):
         self.tracking_p = QProcess()
         self.tracking_p.readyReadStandardOutput.connect(self.handle_stdout)
         self.tracking_p.readyReadStandardError.connect(self.handle_stdout)
-        self.tracking_p.start("python", ["background_processes\\tracking.py"])
+        self.tracking_p.start("python", ["background_processes/tracking.py"])
 
         self.webcam_p = QProcess()
         self.webcam_p.readyReadStandardOutput.connect(self.handle_stdout)
         self.webcam_p.readyReadStandardError.connect(self.handle_stdout)
-        self.webcam_p.start("python", ["background_processes\\blink_yawn_detection.py"])
+        self.webcam_p.start("python", ["-u", "background_processes/blink_yawn_detection.py"])
 
         self.analysis_p = QProcess()
         self.analysis_p.readyReadStandardOutput.connect(self.handle_stdout)
-        self.analysis_p.start("python", ["background_processes\\analysis.py"])
-
+        self.analysis_p.start("python", ["-u","background_processes/analysis.py"])
     def handle_stdout(self):
         print(bytes(self.tracking_p.readAllStandardOutput()).decode("utf8"))
         print(bytes(self.tracking_p.readAllStandardError()).decode("utf8"))
-        print(bytes(self.webcam_p.readAllStandardOutput()).decode("utf8"))
+        # print(bytes(self.webcam_p.readAllStandardOutput()).decode("utf8"))
         print(bytes(self.webcam_p.readAllStandardError()).decode("utf8"))
+        print(bytes(self.analysis_p.readAllStandardError()).decode("utf8"))
 
-        command = bytes(self.analysis_p.readAllStandardOutput()).decode("utf8")
-        if command:
+        trigger_analysis = bytes(self.analysis_p.readAllStandardOutput()).decode("utf8")
+        trigger_detect = self.webcam_p.readAllStandardOutput().data().decode('utf-8').strip()
+        print(trigger_detect)
+        print(trigger_analysis)
+        if trigger_analysis:
             show_custom_alert('Please take a break!')
-
 
 class Alert(QDialog):
     def __init__(self, message, duration=30000):
@@ -224,7 +226,7 @@ class Alert(QDialog):
         self.setStyleSheet(f"""
             background-color: {background.name()};
             color: {text.name()};
-            font-size: 20px;
+            font-size: 16px;
         """)
 
         self.setFixedHeight(150)  # Adjust the height as needed

@@ -1,7 +1,7 @@
 import os.path
 import random
 import time
-import mouse
+import macmouse
 
 file_name = 'data/tracking_data.csv'
 columns = ['event_type', 'button', 'x', 'y', 'delta', 'time']
@@ -12,13 +12,13 @@ if not os.path.isfile(file_name):
 
 
 prev_stress = 0.5
-def callback(event: mouse.ButtonEvent | mouse.WheelEvent | mouse.MoveEvent):
+def callback(event: macmouse.ButtonEvent | macmouse.WheelEvent | macmouse.MoveEvent):
     data = []
-    if isinstance(event, mouse.ButtonEvent):
+    if isinstance(event, macmouse.ButtonEvent):
         data = [event.event_type, event.button, '', '', '', event.time]
-    elif isinstance(event, mouse.WheelEvent):
+    elif isinstance(event, macmouse.WheelEvent):
         data = ['scroll', '', '', '', event.delta, event.time]
-    elif isinstance(event, mouse.MoveEvent):
+    elif isinstance(event, macmouse.MoveEvent):
         data = ['move', '', event.x, event.y, '', event.time]
 
     data = [str(i) for i in data]
@@ -34,6 +34,6 @@ def callback(event: mouse.ButtonEvent | mouse.WheelEvent | mouse.MoveEvent):
         f.write('\n')
 
 
-mouse.hook(callback)
+macmouse.hook(callback)
 while True:
     time.sleep(1000000)
