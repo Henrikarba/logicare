@@ -2,7 +2,7 @@ import sys
 import threading
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QMainWindow, QStackedWidget, QToolButton, QDialog, QSystemTrayIcon, QMenu
 from animated_toggle import AnimatedToggle
-from PyQt6.QtCore import Qt, QSize, QTimer, pyqtSignal, QObject, QUrl
+from PyQt6.QtCore import Qt, QSize, QTimer, pyqtSignal, QObject, QUrl, QProcess
 from PyQt6.QtGui import QColor, QFont, QCursor, QIcon, QGuiApplication, QAction
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from pynput import keyboard
@@ -167,9 +167,9 @@ class MyMainWindow(QMainWindow):
         self.stacked_widget.addWidget(widget1)
         self.stacked_widget.addWidget(widget2)
 
-        self.init_processes()
+        # self.init_processes()
 
-    def init_processes(self):
+    """def init_processes(self):
         self.tracking_p = QProcess()
         self.tracking_p.readyReadStandardOutput.connect(self.handle_stdout)
         self.tracking_p.readyReadStandardError.connect(self.handle_stdout)
@@ -178,7 +178,8 @@ class MyMainWindow(QMainWindow):
         self.webcam_p = QProcess()
         self.webcam_p.readyReadStandardOutput.connect(self.handle_stdout)
         self.webcam_p.readyReadStandardError.connect(self.handle_stdout)
-        self.webcam_p.start("python", ["background_processes\\blink_yawn_detection.py"])
+        self.webcam_p.start(
+            "python", ["background_processes\\blink_yawn_detection.py"])
 
         self.analysis_p = QProcess()
         self.analysis_p.readyReadStandardOutput.connect(self.handle_stdout)
@@ -192,7 +193,7 @@ class MyMainWindow(QMainWindow):
 
         command = bytes(self.analysis_p.readAllStandardOutput()).decode("utf8")
         if command:
-            show_custom_alert('Please take a break!')
+            show_custom_alert('Please take a break!')"""
 
 
 class Alert(QDialog):
@@ -206,8 +207,19 @@ class Alert(QDialog):
         self.message_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.message_label.setWordWrap(True)
 
+        self.time_label = QLabel(self.format_time(duration))
+        self.time_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.time_layout = QHBoxLayout()
+        self.time_layout.addWidget(
+            QLabel("reminder closes in"))
+        self.time_layout.addWidget(self.time_label)
+        self.time_layout.setContentsMargins(
+            10, 0, 10, 0)  # Adjust margins as needed
+
         layout = QVBoxLayout()
         layout.addWidget(self.message_label)
+        layout.addLayout(self.time_layout)
         self.setLayout(layout)
 
         self.setStyleSheet(f"""
@@ -216,19 +228,36 @@ class Alert(QDialog):
             font-size: 20px;
         """)
 
-        self.setFixedHeight(100)  # Adjust the height as needed
-        self.setFixedWidth(200)  # Adjust the width as needed
+        self.setFixedHeight(150)  # Adjust the height as needed
+        self.setFixedWidth(300)  # Adjust the width as needed
 
         # Move the alert to the bottom right corner
         self.move_to_bottom_right()
 
         # Automatically close the alert after a certain duration
+        self.duration = duration
+        self.remaining_time = duration
+
         self.close_timer = QTimer(self)
         self.close_timer.timeout.connect(self.close)
         self.close_timer.start(duration)
 
+        # Update the countdown timer every second
+        self.update_timer = QTimer(self)
+        self.update_timer.timeout.connect(self.update_countdown)
+        self.update_timer.start(1000)
+
+    def format_time(self, milliseconds):
+        seconds = milliseconds // 1000
+        minutes, seconds = divmod(seconds, 60)
+        return f"{minutes:02}:{seconds:02}"
+
+    def update_countdown(self):
+        self.remaining_time -= 1000
+        self.time_label.setText(self.format_time(self.remaining_time))
+
     def move_to_bottom_right(self):
-        screen = QGuiApplication.primaryScreen()
+        screen = QApplication.primaryScreen()
         screen_geometry = screen.availableGeometry()
 
         self.setGeometry(
