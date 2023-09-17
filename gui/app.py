@@ -5,6 +5,9 @@ import plotly.express as px
 import dash_bootstrap_components as dbc
 import plotly.graph_objs as go
 
+from background_processes.analysis import read_file, get_trajectories
+
+
 # Incorporate mock data and specify data viz
 
 
@@ -65,6 +68,11 @@ def generate_overall_viz(df):
     return fig
 
 
+df = read_file()
+df = get_trajectories(df)
+
+time_s = df.groupby(pd.Grouper(key='start', freq='60S')).mean()['stress'].rolling(10, min_periods=3).mean()
+
 data_overall = pd.read_feather('./gui/mock_data/data_overall.feather')
 data_mouse = pd.read_feather('./gui/mock_data/data_mouse.feather')
 data_blinking = pd.read_feather('./gui/mock_data/data_blinking.feather')
@@ -74,7 +82,7 @@ df_merged = data_overall.merge(data_mouse, on='hours_of_the_day', how='inner') \
     .merge(data_yawning, on='hours_of_the_day', how='inner')
 
 fig_overall = generate_overall_viz(df_merged)
-fig_mouse = generate_individual_viz(data_mouse, x='hours_of_the_day', y='mouse_fatigue_values',
+fig_mouse = generate_individual_viz(time_s, x='start', y='stress',
                                     x_label='hour of the day', y_label='stressed inferred from mouse movement',
                                     title='Fatigue inferred from mouse movement')
 fig_blinking = generate_individual_viz(data_blinking, x='hours_of_the_day', y='blinking_fatigue_values',
