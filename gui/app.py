@@ -65,10 +65,10 @@ def generate_overall_viz(df):
     return fig
 
 
-data_overall = pd.read_feather('./mock_data/data_overall.feather')
-data_mouse = pd.read_feather('./mock_data/data_mouse.feather')
-data_blinking = pd.read_feather('./mock_data/data_blinking.feather')
-data_yawning = pd.read_feather('./mock_data/data_yawning.feather')
+data_overall = pd.read_feather('./gui/mock_data/data_overall.feather')
+data_mouse = pd.read_feather('./gui/mock_data/data_mouse.feather')
+data_blinking = pd.read_feather('./gui/mock_data/data_blinking.feather')
+data_yawning = pd.read_feather('./gui/mock_data/data_yawning.feather')
 df_merged = data_overall.merge(data_mouse, on='hours_of_the_day', how='inner') \
     .merge(data_blinking, on='hours_of_the_day', how='inner') \
     .merge(data_yawning, on='hours_of_the_day', how='inner')
@@ -124,4 +124,4 @@ def render_content(tab):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=8050)
