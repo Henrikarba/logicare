@@ -7,7 +7,7 @@ import pandas as pd
 
 
 def read_file():
-    df = pd.read_csv('data/mouse_tracking_data_dump_ilia.csv')
+    df = pd.read_csv('data/tracking_data.csv')
     df["time"] = pd.to_datetime(df['time'] * 10 ** 9)
 
     l = len(df)
@@ -98,6 +98,7 @@ def get_trajectories(df):
         trajectory_i += 1
 
     df = pd.DataFrame(trajectories)
+    df['stress'] = - df['speed'] * df['accuracy'] + 3000
     return df
 
 
@@ -106,11 +107,21 @@ if __name__ == '__main__':
     while True:
         df = read_file()
         df = get_trajectories(df)
-
-        time_s = df.groupby(pd.Grouper(key='start', freq='3Min')).mean()['stress'].rolling(10, min_periods=3).mean()
+            
+        try:
+            dfcam = pd.read_csv('data/webcam_data.csv')
+            dfcam["time"] = pd.to_datetime(df['time'] * 10 ** 9)
+            fatigue_avg = dfcam.groupby(pd.Grouper(key='delta', freq='60S')).mean()['fatigue'].rolling(10, min_periods=3).mean()
+            print(fatigue_avg)
+            if fatigue_avg > 0.5:
+                print('nudge')
+        except:
+            pass
+        time_s = df.groupby(pd.Grouper(key='start', freq='60S')).mean()['stress'].rolling(10, min_periods=3).mean()
         last = time_s.iloc[-3:].to_list()
         if last[0] < last[1] < last[2]:
             print('issue nudge')
+
 
         time.sleep(60)
 

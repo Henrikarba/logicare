@@ -11,7 +11,7 @@ cam = cv2.VideoCapture(0)
 # cam.set(cv2.CAP_PROP_FPS, 20)
 
 # Variables
-blink_thresh = 0.37
+blink_thresh = 0.38
 yawn_thr = 1
 succ_frame = 2
 count_frame = 0
@@ -39,6 +39,8 @@ per_minute_blink = []
 per_minute_yawn = []
 blink_timestamps = []
 yawn_timestamps = []
+fatigue_level = 0
+# not_blinked = True
 while res:
     if (time.time() - last_yawn) > 5:
         already_yawned = False
@@ -46,10 +48,12 @@ while res:
         # print(1/total_blinks, total_yawn/5)
         blink_callback(total_blinks)
         yawn_callback(total_yawn)
+        fatigue_callback(total_blinks, total_yawn)
+        print("wrote callbacks")
         per_minute_blink.append(total_blinks)
         per_minute_yawn.append(total_yawn)
-        print("blinks ", per_minute_blink)
-        print("yawns ", per_minute_yawn)
+        # print("blinks ", per_minute_blink)
+        # print("yawns ", per_minute_yawn)
         total_blinks = 0
         total_yawn = 0
         elapsed_time = 0
@@ -89,7 +93,6 @@ while res:
             already_yawned = True
             last_yawn = time.time()
         
-        fatigue_level = (total_yawn ** 2.5 +1)* 5 / (total_blinks+0.1)
         
         text = 'Blinks: ' + str(total_blinks) + " Yawns: " + str(total_yawn)
         if total_blinks > 0:
@@ -104,7 +107,17 @@ while res:
             thickness=2
         )
     cv2.imshow("cam", image)
-
+    if total_blinks==0:
+        fatigue_level = total_yawn/5 
+    else:
+        fatigue_level =  (total_yawn/5) + (1 / total_blinks)
+        # print(1/total_blinks)
+    # print(fatigue_level)
+    # fatigue_level = (curr_fatigue + fatigue_level) / 2
+    # print(curr_fatigue)
+    # print("fatigue ", fatigue_level)
+    # if fatigue_level > 0.7:
+        # print("break")
     res, image = cam.read()
     elapsed_time += time.time() - start_time
     key = cv2.waitKey(20)

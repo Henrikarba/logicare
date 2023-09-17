@@ -6,13 +6,14 @@ from imutils import face_utils
 import os
 import time
 
-file_name = 'data/tracking_data.csv'
+file_name = 'data/webcam_data.csv'
+if not os.path.isfile(file_name):
+    columns = ['event_type', 'button', 'x', 'y', 'delta', 'time']
+    with open(file_name, 'a') as f:
+        f.write(','.join(columns))
+        f.write('\n')
+
 def blink_callback(blinks_per_min):
-    if not os.path.isfile(file_name):
-        columns = ['event_type', 'button', 'x', 'y', 'delta', 'time']
-        with open(file_name, 'a') as f:
-            f.write(','.join(columns))
-            f.write('\n')
     data = ["blink", "", "", "", str(blinks_per_min), str(time.time())]
     with open(file_name, 'a') as f:
         f.write(','.join(data))
@@ -29,6 +30,17 @@ def yawn_callback(yawns_per_min):
         f.write(','.join(data))
         f.write('\n')
 
+def fatigue_callback(total_blinks, total_yawns):
+    fatigue_level =  (total_yawns/5) + (1 / total_blinks)
+    if not os.path.isfile(file_name):
+        columns = ['event_type', 'button', 'x', 'y', 'delta', 'time']
+        with open(file_name, 'a') as f:
+            f.write(','.join(columns))
+            f.write('\n')
+    data = ["fatigue", "", "", "", str(fatigue_level), str(time.time())]
+    with open(file_name, 'a') as f:
+        f.write(','.join(data))
+        f.write('\n')
 # defining a function to calculate the EAR
 def calculate_EAR(eye):
   
