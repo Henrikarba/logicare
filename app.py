@@ -65,7 +65,8 @@ class CustomTitleBar(QWidget):
         # Add the buttons to the layout without alignment
         layout.addWidget(self.backButton)
         layout.addStretch(1)
-        layout.addWidget(self.settings, alignment=Qt.AlignmentFlag.AlignRight)
+        layout.addWidget(
+            self.settings)
 
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
