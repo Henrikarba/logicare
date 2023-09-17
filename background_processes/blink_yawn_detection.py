@@ -88,7 +88,12 @@ while res:
             yawn_timestamps.append(time.time())
             already_yawned = True
             last_yawn = time.time()
+        
+        fatigue_level = (total_yawn ** 2.5 +1)* 5 / (total_blinks+0.1)
+        
         text = 'Blinks: ' + str(total_blinks) + " Yawns: " + str(total_yawn)
+        if total_blinks > 0:
+            text += " Fatigue: %.2f" % fatigue_level
         image = cv2.putText(
             img=image,
             text=text,
@@ -96,9 +101,10 @@ while res:
             fontFace=cv2.FONT_HERSHEY_DUPLEX,
             fontScale=0.7,
             color=(225, 246, 55),
-            thickness=1
+            thickness=2
         )
     cv2.imshow("cam", image)
+
     res, image = cam.read()
     elapsed_time += time.time() - start_time
     key = cv2.waitKey(20)

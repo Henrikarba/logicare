@@ -134,19 +134,32 @@ class MyMainWindow(QMainWindow):
         self.stacked_widget.addWidget(widget1)
         self.stacked_widget.addWidget(widget2)
 
-        # self.init_processes()
+        self.init_processes()
 
     def init_processes(self):
         self.tracking_p = QProcess()
         self.tracking_p.readyReadStandardOutput.connect(self.handle_stdout)
-        self.tracking_p.start("python", ["dummy_script.py"])
+        self.tracking_p.readyReadStandardError.connect(self.handle_stdout)
+        self.tracking_p.start("python", ["background_processes\\tracking.py"])
 
-        # self.webcam_p = QProcess()
+        self.webcam_p = QProcess()
+        self.webcam_p.readyReadStandardOutput.connect(self.handle_stdout)
+        self.webcam_p.readyReadStandardError.connect(self.handle_stdout)
+        self.webcam_p.start("python", ["background_processes\\blink_yawn_detection.py"])
 
+        self.analysis_p = QProcess()
+        self.analysis_p.readyReadStandardOutput.connect(self.handle_stdout)
+        self.analysis_p.start("python", ["background_processes\\analysis.py"])
 
     def handle_stdout(self):
         print(bytes(self.tracking_p.readAllStandardOutput()).decode("utf8"))
-        Alert('yo mama').exec()
+        print(bytes(self.tracking_p.readAllStandardError()).decode("utf8"))
+        print(bytes(self.webcam_p.readAllStandardOutput()).decode("utf8"))
+        print(bytes(self.webcam_p.readAllStandardError()).decode("utf8"))
+
+        command = bytes(self.analysis_p.readAllStandardOutput()).decode("utf8")
+        if command:
+            show_custom_alert('Please take a break!')
 
     def keyPressEvent(self, event: QKeyEvent):
         if event.key() == Qt.Key.Key_Delete:

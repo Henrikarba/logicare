@@ -6,8 +6,8 @@ from imutils import face_utils
 import os
 import time
 
+file_name = 'data/tracking_data.csv'
 def blink_callback(blinks_per_min):
-    file_name = 'mouse_tracking_data.txt'
     if not os.path.isfile(file_name):
         columns = ['event_type', 'button', 'x', 'y', 'delta', 'time']
         with open(file_name, 'a') as f:
@@ -19,7 +19,6 @@ def blink_callback(blinks_per_min):
         f.write('\n')
 
 def yawn_callback(yawns_per_min):
-    file_name = 'mouse_tracking_data.txt'
     if not os.path.isfile(file_name):
         columns = ['event_type', 'button', 'x', 'y', 'delta', 'time']
         with open(file_name, 'a') as f:
