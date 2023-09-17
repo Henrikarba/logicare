@@ -1,6 +1,9 @@
+![img.png](static/img.png)
 # LogiCare
 
-By Henri, Ilia, Lune, Jiayao at HackZurich23
+By Henri, Ilia, Lune and Jiayao at [HackZurich23](https://hackzurich.com/)
+for Logitech
+
 
 ## User status detection
 
@@ -8,12 +11,10 @@ By Henri, Ilia, Lune, Jiayao at HackZurich23
 * to use webcam / keyboard / mouse
 * decision logic of when to generate nudge (output from the user status detection module)
 
-## Well-being user nudge
+## Limitations
 
-* app interface
-* keyboard feedback output
+* There are known issues with mouse tracking on Macs. Meaningful insights will only be produced after around 30 minutes of data.
 
-## GUI
-### How to run locally?
-* Install gui-requirements.txt
-* At project root path, run command `python gui/app.py`
+### How to run?
+* `pip install requirements.txt`
+* `python app.py`

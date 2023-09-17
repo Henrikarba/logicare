@@ -1,5 +1,11 @@
-numpy
-opencv-python
-scipy
-dlib
-imutils
+pandas~=2.1.0
+plotly~=5.17.0
+dash~=2.13.0
+pyqt6~=6.5.2
+pynput~=1.7.6
+opencv-python~=4.8.0.76
+dlib~=19.24.2
+imutils~=0.5.4
+scipy~=1.11.2
+mouse~=0.7.1
+PyQt6-WebEngine~=6.5.0

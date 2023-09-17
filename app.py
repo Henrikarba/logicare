@@ -2,7 +2,7 @@ import sys
 import threading
 from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QMainWindow, QStackedWidget, QToolButton, QDialog, QSystemTrayIcon, QMenu
 from animated_toggle import AnimatedToggle
-from PyQt6.QtCore import Qt, QSize, QTimer, pyqtSignal, QObject, QUrl
+from PyQt6.QtCore import Qt, QSize, QTimer, pyqtSignal, QObject, QUrl, QProcess, QThreadPool
 from PyQt6.QtGui import QColor, QFont, QCursor, QIcon, QGuiApplication, QAction
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from pynput import keyboard
@@ -37,7 +37,7 @@ class CustomTitleBar(QWidget):
         layout = QHBoxLayout()  # Use QHBoxLayout for horizontal arrangement
 
         self.backButton = QPushButton()
-        self.backButton.setIcon(QIcon("arrow.png"))
+        self.backButton.setIcon(QIcon("static/arrow.png"))
         self.backButton.setFixedSize(QSize(35, 35))
         self.backButton.setIconSize(self.backButton.sizeHint())
         self.setStyleSheet(f"""
