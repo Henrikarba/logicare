@@ -1,8 +1,10 @@
 ![img.png](static/img.png)
-# LogiCare
+# LogiCare - Second prize winner at [HackZurich'23](https://hackzurich.com/)
 
-By Henri, Ilia, Lune and Jiayao at [HackZurich23](https://hackzurich.com/)
+By Henri, Ilia, Lune and Jiayao 
 for Logitech challenge
+
+[Link to Devpost](https://devpost.com/software/logicare-n9l46r)
 
 
 ## Background processes
