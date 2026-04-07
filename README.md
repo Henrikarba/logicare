@@ -1,3 +1,9 @@
+# ⚠️ Project Status: Unmaintained
+
+This repository is no longer actively maintained.
+It is provided as-is for reference purposes.
+Python some packages might have security vulnerabilities.
+
 ![img.png](static/img.png)
 # LogiCare - Second prize winner at [HackZurich'23](https://hackzurich.com/)
 
